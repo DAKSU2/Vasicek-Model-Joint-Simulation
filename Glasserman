@@ -1,0 +1,51 @@
+library(gplots)
+library(dplyr)
+
+#Values
+r0 <- 0.04   #Start Value
+a <- 0.5     #alpha 
+sigma <- 0.04 #sigma
+n <- 100    # number of simulations (will increase the plausibilty of Quantiles)
+T <- 10   # total time
+m <- 200   # subintervals
+s<- 1    # subintervals only required for LIBOR
+
+-------------------------Joint Simulation---------------------------------------------------------------
+
+Sim_Vasicek_Joint <-function(r0,sigma,T,b,a,n){
+  Z1<-rnorm(n, 0, 1)
+  Z2<-rnorm(n, 0, 1)
+  sim_Vas11 <- (exp(-a*T))*r0+b*(1-exp(-a*T))+sigma*sqrt((1/(2*a))*(1-exp(-2*a*T)))*Z1
+  U_Y<-(1/a)*(1-exp(-a*T))*r0 +b*(1/a*exp(-T*a)+T-1/a)
+  SG_Y<-sqrt(((sigma^2)/(a^2))*((T+(1/(2*a))*(1-(exp(-2*a*T)))+(2/a)*(exp(-a*T)-1))))
+  SG_RY<-((sigma^2)/(2*a))*(1+exp((-2*a*T))-2*exp(-a*T))
+  SG_R<-sqrt(((sigma^2)/(2*(a)))*(1-exp(-2*a*T)))                 
+  Coor<-SG_RY/(SG_Y*SG_R)
+  sim_Vas <- (r0)+U_Y+SG_Y*(Coor*Z1+sqrt(1-(Coor**2))*Z2) 
+  Rate <-mean(sim_Vas) 
+  SE<-1.96*sd(sim_Vas)/sqrt(n) 
+  LowerB <- Rate - SE
+  UpperB <- Rate + SE 
+  
+  Rate11 <-mean(sim_Vas11) 
+  SE11<-1.96*sd(sim_Vas11)/sqrt(n) 
+  LowerB11 <- Rate11 - SE11
+  UpperB11 <- Rate11 + SE11 
+  
+  return(c(Rate= Rate ,SE=SE,Lower=LowerB,Upper=UpperB))
+}
+
+-------------------------Term Structure---------------------------------------------------------------
+
+Joint_Plot<-function(r0,sigma,T,b, a,n){
+  rt<- matrix(0, n, 1)
+  rt[1]<-r0
+  for (i in 2:n){
+    rt[i]<-Sim_Vasicek_Joint(rt[i-1],sigma,T,b, a,i)[1]
+  }
+  maturity <- seq(1, n, 1)
+  matplot(maturity, rt, type="l",  lty=1, main="Yield Curve Shapes")
+  return(rt)
+}
+
+Joint_Plot(r0,sigma,T/m,b,a,10)
