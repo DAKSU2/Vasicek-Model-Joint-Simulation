@@ -2,13 +2,12 @@ library(gplots)
 library(dplyr)
 
 #Values
-r0 <- 0.04   #Start Value
+r0 <- 0.04   #Initial Value
 a <- 0.5     #alpha 
 sigma <- 0.04 #sigma
-n <- 100    # number of simulations (will increase the plausibilty of Quantiles)
-T <- 10   # total time
-m <- 200   # subintervals
-s<- 1    # subintervals only required for LIBOR
+n <- 100    # of simulations
+T <- 10   # Time
+m <- 200   # Subinterval
 
 -------------------------Joint Simulation---------------------------------------------------------------
 
